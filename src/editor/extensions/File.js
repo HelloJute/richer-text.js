@@ -3,10 +3,11 @@ import { mergeAttributes, Node } from '@tiptap/core'
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from '@tiptap/pm/view';
 import { ActiveStorageUploader } from '../ActiveStorageUploader';
+import icons from '../icons';
 
 export const uploadFile = (file, handleComplete) => {
   const handleProgress = () => {};
-  const handleFailure = () => { console.log("Failed to upload attachment"); };
+  const handleFailure = () => { console.log("Failed to upload file"); };
 
   const uploader = new ActiveStorageUploader(
     file,
@@ -18,16 +19,60 @@ export const uploadFile = (file, handleComplete) => {
   uploader.start()
 }
 
-//Find the placeholder in editor
+// Find the placeholder in editor
 function findPlaceholder(state, id) {
   let decos = placeholderPlugin.getState(state)
   let found = decos.find(null, null, spec => spec.id == id)
   return found.length ? found[0].from : null
 }
 
+// Get file icon based on file type
+function getFileIcon(fileType, fileName) {
+  const extension = fileName.split('.').pop()?.toLowerCase();
+
+  // Check for specific file types
+  if (fileType.startsWith('image/')) {
+    return icons.get('image');
+  }
+
+  if (fileType === 'application/pdf') {
+    return icons.get('file-pdf');
+  }
+
+  if (fileType.startsWith('text/') || ['txt', 'md', 'json', 'xml', 'html', 'css', 'js', 'ts', 'jsx', 'tsx'].includes(extension)) {
+    return icons.get('file-text');
+  }
+
+  if (['doc', 'docx'].includes(extension)) {
+    return icons.get('file-word');
+  }
+
+  if (['xls', 'xlsx'].includes(extension)) {
+    return icons.get('file-spreadsheet');
+  }
+
+  if (['ppt', 'pptx'].includes(extension)) {
+    return icons.get('file-presentation');
+  }
+
+  if (['zip', 'rar', '7z', 'tar', 'gz'].includes(extension)) {
+    return icons.get('file-zip');
+  }
+
+  if (['mp3', 'wav', 'flac', 'aac', 'ogg'].includes(extension)) {
+    return icons.get('file-music');
+  }
+
+  if (['mp4', 'avi', 'mov', 'wmv', 'flv', 'webm'].includes(extension)) {
+    return icons.get('file-video');
+  }
+
+  // Default file icon
+  return icons.get('file');
+}
 
 export default Node.create({
-  name: 'image',
+  name: 'file',
   group: 'block',
   draggable: true,
 
@@ -42,7 +87,13 @@ export default Node.create({
       src: {
         default: null,
       },
-      alt: {
+      fileName: {
+        default: null,
+      },
+      fileType: {
+        default: null,
+      },
+      fileSize: {
         default: null,
       },
       signedId: {
@@ -52,19 +103,19 @@ export default Node.create({
         default: null,
       },
       width: {
-        default: "50%",
+        default: "100%",
         parseHTML: (element) =>
-          element.style.width.includes("%") ? element.style.width : "50%",
+          element.style.width.includes("%") ? element.style.width : "100%",
       }
     };
   },
 
   renderHTML({ HTMLAttributes }) {
-    return ["img", mergeAttributes(HTMLAttributes)];
+    return ["div", mergeAttributes(HTMLAttributes, { class: "file-attachment" })];
   },
 
   parseHTML() {
-    return [{ tag: "img" }];
+    return [{ tag: "div.file-attachment" }];
   },
 
   addStorage() {
@@ -75,12 +126,7 @@ export default Node.create({
 
   addCommands() {
     return {
-      // attachImage: ({ signedId, fileName}) => ({ commands }) => {
-      //   const url = `/rails/active_storage/blobs/redirect/${signedId}/${fileName}`;
-
-      //   return commands.insertContent({ type: this.name, attrs: { src: url, alt: fileName, signedId: signedId }})
-      // },
-      setImageWidth: (width) => ({ commands }) => {
+      setFileWidth: (width) => ({ commands }) => {
         return commands.updateAttributes(this.name, { width });
       },
     };
@@ -88,12 +134,17 @@ export default Node.create({
 
   addNodeView() {
     return ({ node, getPos, editor }) => {
-      const { signedId, alt, url, src, width } = node.attrs;
+      const { signedId, fileName, fileType, fileSize, src, width } = node.attrs;
 
       const template = html`
-        <div style="width: ${width}">
-          <img src="${src}" alt="${alt}" data-drag-handle />
+      <div class="file-upload">
+        <div>
+          ${getFileIcon(fileType, fileName)}
         </div>
+        <a href="${src}" download="${fileName}" class="file-download no-legacy flex-col items-center text-center h-24 w-24">
+          ${fileName}
+        </a>
+      </div>
       `;
 
       // Scratch element to render into.
@@ -102,22 +153,10 @@ export default Node.create({
 
       const dom = scratch.firstElementChild;
 
-      let srcRevoked = false;
-
       return {
         dom,
         update(node) {
-          if (node.type.name !== "image") return false;
-
-          if (!srcRevoked && node.attrs.url) {
-            srcRevoked = true;
-            try {
-              URL.revokeObjectURL(node.attrs.src);
-            } catch (_e) {
-              /* We don't really care if this fails. An attempt was made. 🤷‍♀️ */
-            }
-          }
-
+          if (node.type.name !== "file") return false;
           return false;
         },
       };
@@ -131,18 +170,19 @@ export default Node.create({
     return [
       placeholderPlugin,
       new Plugin({
-        key: new PluginKey('image'),
+        key: new PluginKey('file'),
         props: {
           handlePaste: (view, event) => {
             if (!this.options.attachmentsEnabled) return false;
 
             event.preventDefault();
 
-            const images = Array.from(event.clipboardData.files).filter((file) => {
-              return file.type.startsWith('image/');
+            const files = Array.from(event.clipboardData.files).filter((file) => {
+              // Accept all files, not just images
+              return true;
             });
 
-            Array.from(images).forEach((image) => {
+            Array.from(files).forEach((file) => {
               // A fresh object to act as the ID for this upload
               let id = {};
 
@@ -150,25 +190,26 @@ export default Node.create({
               let tr = view.state.tr;
               if (!tr.selection.empty) tr.deleteSelection();
 
-              tr.setMeta(placeholderPlugin, {add: {id, pos: tr.selection.from}, image: image});
+              tr.setMeta(placeholderPlugin, {add: {id, pos: tr.selection.from}, file: file});
               view.dispatch(tr)
 
               const onUploadComplete = (attrs, completedUpload) => {
-                const payload = {
-                  signedId: attrs.signedId,
-                  name: completedUpload.file.name,
-                  src: `/rails/active_storage/blobs/redirect/${attrs.signedId}/${completedUpload.file.name}`,
-                  alt: completedUpload.file.name,
-                  id: attrs.id,
-                };
+                                  const payload = {
+                    signedId: attrs.signedId,
+                    fileName: completedUpload.file.name,
+                    fileType: completedUpload.file.type,
+                    fileSize: formatFileSize(completedUpload.file.size),
+                    src: `/rails/active_storage/blobs/redirect/${attrs.signedId}/${completedUpload.file.name}`,
+                    id: attrs.id,
+                  };
 
                 view.dispatch(
-                  view.state.tr.replaceWith(view.state.history$.prevRanges[0], view.state.history$.prevRanges[1], schema.nodes.image.create(payload))
+                  view.state.tr.replaceWith(view.state.history$.prevRanges[0], view.state.history$.prevRanges[1], schema.nodes.file.create(payload))
                     .setMeta(placeholderPlugin, {remove: {id}})
                 )
               }
 
-              uploadFile(image, onUploadComplete);
+              uploadFile(file, onUploadComplete);
 
             });
           },
@@ -176,11 +217,12 @@ export default Node.create({
             if (!this.options.attachmentsEnabled) return false;
 
             event.preventDefault();
-            const images = Array.from(event.dataTransfer.files).filter((file) => {
-              return file.type.startsWith('image/');
+            const files = Array.from(event.dataTransfer.files).filter((file) => {
+              // Accept all files, not just images
+              return true;
             });
 
-            Array.from(images).forEach((image) => {
+            Array.from(files).forEach((file) => {
               const coordinates = view.posAtCoords({
                 left: event.clientX,
                 top: event.clientY,
@@ -193,7 +235,7 @@ export default Node.create({
               let tr = view.state.tr;
               if (!tr.selection.empty) tr.deleteSelection();
 
-              tr.setMeta(placeholderPlugin, {add: {id, pos: coordinates.pos}, image: image})
+              tr.setMeta(placeholderPlugin, {add: {id, pos: coordinates.pos}, file: file})
               view.dispatch(tr)
 
               const onUploadComplete = (attrs, completedUpload) => {
@@ -205,24 +247,33 @@ export default Node.create({
 
                   const payload = {
                     signedId: attrs.signedId,
-                    name: completedUpload.file.name,
+                    fileName: completedUpload.file.name,
+                    fileType: completedUpload.file.type,
+                    fileSize: formatFileSize(completedUpload.file.size),
                     src: `/rails/active_storage/blobs/redirect/${attrs.signedId}/${completedUpload.file.name}`,
-                    alt: completedUpload.file.name,
                     id: attrs.id,
                   };
 
                   view.dispatch(
-                    view.state.tr.replaceWith(pos, pos, schema.nodes.image.create(payload))
+                    view.state.tr.replaceWith(pos, pos, schema.nodes.file.create(payload))
                       .setMeta(placeholderPlugin, {remove: {id}})
                   )
                 }
 
-                uploadFile(image, onUploadComplete)
+                uploadFile(file, onUploadComplete)
             });
           },
         },
       }),
     ];
+  },
+
+  formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   },
 });
 
@@ -236,10 +287,10 @@ let placeholderPlugin = new Plugin({
       let action = tr.getMeta(this)
       if (action && action.add) {
         let widget = document.createElement("div")
-        let img = document.createElement('img');
-        widget.classList = "image-uploading";
-        img.src = URL.createObjectURL(action.image);
-        widget.appendChild(img);
+        let icon = document.createElement('div');
+        widget.classList = "file-uploading";
+        icon.innerHTML = getFileIcon(action.file.type, action.file.name).strings[0];
+        widget.appendChild(icon);
         let deco = Decoration.widget(action.add.pos, widget, {id: action.add.id})
         set = set.add(tr.doc, [deco])
       } else if (action && action.remove) {
@@ -247,9 +298,9 @@ let placeholderPlugin = new Plugin({
                                     spec => spec.id == action.remove.id))
       }
       return set
-      }
-    },
-    props: {
-      decorations(state) { return this.getState(state) }
     }
+  },
+  props: {
+    decorations(state) { return this.getState(state) }
+  }
 });

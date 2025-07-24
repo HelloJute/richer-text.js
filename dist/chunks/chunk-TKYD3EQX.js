@@ -1,6 +1,6 @@
 import {
   ActiveStorageUploader
-} from "./chunk-YURKDJUS.js";
+} from "./chunk-TT5WKR4V.js";
 
 // src/editor/extensions/Image.js
 import { html, render } from "lit";
@@ -46,9 +46,12 @@ var Image_default = Node.create({
       signedId: {
         default: null
       },
+      id: {
+        default: null
+      },
       width: {
-        default: "100%",
-        parseHTML: (element) => element.style.width.includes("%") ? element.style.width : "100%"
+        default: "50%",
+        parseHTML: (element) => element.style.width.includes("%") ? element.style.width : "50%"
       }
     };
   },
@@ -130,7 +133,8 @@ var Image_default = Node.create({
                   signedId: attrs.signedId,
                   name: completedUpload.file.name,
                   src: `/rails/active_storage/blobs/redirect/${attrs.signedId}/${completedUpload.file.name}`,
-                  alt: completedUpload.file.name
+                  alt: completedUpload.file.name,
+                  id: attrs.id
                 };
                 view.dispatch(
                   view.state.tr.replaceWith(view.state.history$.prevRanges[0], view.state.history$.prevRanges[1], schema.nodes.image.create(payload)).setMeta(placeholderPlugin, { remove: { id } })
@@ -168,7 +172,8 @@ var Image_default = Node.create({
                   signedId: attrs.signedId,
                   name: completedUpload.file.name,
                   src: `/rails/active_storage/blobs/redirect/${attrs.signedId}/${completedUpload.file.name}`,
-                  alt: completedUpload.file.name
+                  alt: completedUpload.file.name,
+                  id: attrs.id
                 };
                 view.dispatch(
                   view.state.tr.replaceWith(pos, pos, schema.nodes.image.create(payload)).setMeta(placeholderPlugin, { remove: { id } })
@@ -219,4 +224,4 @@ export {
   uploadFile,
   Image_default
 };
-//# sourceMappingURL=chunk-WWQKRGG4.js.map
+//# sourceMappingURL=chunk-TKYD3EQX.js.map

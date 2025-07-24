@@ -3,7 +3,7 @@ import {
 } from "./chunk-RLAFABN3.js";
 import {
   EditorEvents_default
-} from "./chunk-A4ZUN3A7.js";
+} from "./chunk-ZEYLKPOY.js";
 import {
   CommandMenu_default
 } from "./chunk-FQUM6C2N.js";
@@ -133,4 +133,4 @@ var RicherTextKit = Extension.create({
 export {
   RicherTextKit
 };
-//# sourceMappingURL=chunk-MOZVV6Q6.js.map
+//# sourceMappingURL=chunk-DQWBKNSX.js.map

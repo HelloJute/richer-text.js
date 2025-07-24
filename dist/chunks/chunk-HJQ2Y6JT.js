@@ -4,7 +4,7 @@ var isMac = /Mac|iOS|iPhone|iPad|iPod/i.test(
 );
 var modifierKey = isMac ? "cmd" : "ctrl";
 var translations = {
-  attachment: "Insert Image",
+  attachment: "Insert File",
   bold: `Bold <${modifierKey}+b>`,
   italics: `Italics <${modifierKey}+i>`,
   underline: `Underline`,
@@ -30,4 +30,4 @@ export {
   modifierKey,
   translations
 };
-//# sourceMappingURL=chunk-IZ5GQGBV.js.map
+//# sourceMappingURL=chunk-HJQ2Y6JT.js.map

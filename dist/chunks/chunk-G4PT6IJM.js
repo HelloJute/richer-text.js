@@ -1,6 +1,6 @@
 import {
   icons_default
-} from "./chunk-Y3GZZSZO.js";
+} from "./chunk-AEBQSY2W.js";
 import {
   BaseList
 } from "./chunk-XFEFOKNE.js";
@@ -36,4 +36,4 @@ customElements.define("richer-text-menu-list", MenuList);
 export {
   MenuList
 };
-//# sourceMappingURL=chunk-27SH3RDU.js.map
+//# sourceMappingURL=chunk-G4PT6IJM.js.map

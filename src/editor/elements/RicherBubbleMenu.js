@@ -401,6 +401,14 @@ export class RicherBubbleMenu extends LitElement {
           </button>
         </div>
       `
+    } else if (this.mode == "imagechat") {
+      return html`
+        <div class="richer-text-editor--bubble-menu">
+          <button class="toolbar-button" @click=${() => this.removeNode()}>
+            ${icons.get("delete")}
+          </button>
+        </div>
+      `
     } else if (this.mode == "text" && !this.editingLink) {
       return html`
         <div class="richer-text-editor--bubble-menu">

@@ -154,6 +154,112 @@ export const richerTextEditorStyles = css`
     flex-grow: 1;
   }
 
+  /* File attachment styles */
+  .file-attachment {
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 0.75rem;
+    margin: 0.5rem 0;
+    background-color: #f9fafb;
+  }
+
+  .file-attachment-content {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .file-icon {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    background-color: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: 0.375rem;
+  }
+
+  .file-icon svg {
+    width: 1.5rem;
+    height: 1.5rem;
+    color: #6b7280;
+  }
+
+  .file-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .file-name {
+    font-weight: 500;
+    color: var(--text-color);
+    margin-bottom: 0.25rem;
+    word-break: break-word;
+  }
+
+  .file-meta {
+    font-size: 0.875rem;
+    color: #6b7280;
+  }
+
+  .file-actions {
+    flex-shrink: 0;
+  }
+
+  .file-download {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border: 1px solid var(--border-color);
+    border-radius: 0.375rem;
+    background-color: #ffffff;
+    color: #6b7280;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+
+  .file-download:hover {
+    background-color: var(--toolbar-button-background-hover);
+    color: var(--text-color);
+  }
+
+  .file-download svg {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  .file-uploading {
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 0.75rem;
+    margin: 0.5rem 0;
+    background-color: #f9fafb;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .file-uploading > div {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    background-color: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: 0.375rem;
+  }
+
+  .file-uploading svg {
+    width: 1.5rem;
+    height: 1.5rem;
+    color: #6b7280;
+  }
+
   /* Dark Mode styles */
   // @media (prefers-color-scheme: dark) {
   //   :host {

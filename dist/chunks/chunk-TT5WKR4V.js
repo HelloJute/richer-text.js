@@ -17,7 +17,7 @@ var ActiveStorageUploader = class {
           resolve(blob);
       });
     });
-    return promise.then((blob) => this.onComplete({ signedId: blob.signed_id }, this.upload)).catch((error) => this.onFailure(error, this.upload));
+    return promise.then((blob) => this.onComplete({ signedId: blob.signed_id, id: blob.id }, this.upload)).catch((error) => this.onFailure(error, this.upload));
   }
   cancel() {
     if (this.uploadRequest) {
@@ -40,4 +40,4 @@ var ActiveStorageUploader = class {
 export {
   ActiveStorageUploader
 };
-//# sourceMappingURL=chunk-YURKDJUS.js.map
+//# sourceMappingURL=chunk-TT5WKR4V.js.map

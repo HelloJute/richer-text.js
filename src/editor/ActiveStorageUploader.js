@@ -21,7 +21,7 @@ export class ActiveStorageUploader {
     });
 
     return promise
-      .then((blob) => this.onComplete({ signedId: blob.signed_id }, this.upload))
+      .then((blob) => this.onComplete({ signedId: blob.signed_id, id: blob.id }, this.upload))
       .catch((error) => this.onFailure(error, this.upload));
   }
 

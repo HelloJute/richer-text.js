@@ -1,6 +1,6 @@
 import {
   icons_default
-} from "./chunk-Y3GZZSZO.js";
+} from "./chunk-AEBQSY2W.js";
 import {
   __publicField
 } from "./chunk-7ZQBTYAI.js";
@@ -251,6 +251,14 @@ var RicherBubbleMenu = class extends LitElement {
           </button>
         </div>
       `;
+    } else if (this.mode == "imagechat") {
+      return html`
+        <div class="richer-text-editor--bubble-menu">
+          <button class="toolbar-button" @click=${() => this.removeNode()}>
+            ${icons_default.get("delete")}
+          </button>
+        </div>
+      `;
     } else if (this.mode == "text" && !this.editingLink) {
       return html`
         <div class="richer-text-editor--bubble-menu">
@@ -380,4 +388,4 @@ customElements.define("richer-bubble-menu", RicherBubbleMenu);
 export {
   RicherBubbleMenu
 };
-//# sourceMappingURL=chunk-P4AOTAMZ.js.map
+//# sourceMappingURL=chunk-7TPLATK3.js.map

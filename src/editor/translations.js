@@ -5,7 +5,7 @@ export const isMac = /Mac|iOS|iPhone|iPad|iPod/i.test(
 export const modifierKey = isMac ? "cmd" : "ctrl";
 
 export const translations = {
-  attachment: "Insert Image",
+  attachment: "Insert File",
   bold: `Bold <${modifierKey}+b>`,
   italics: `Italics <${modifierKey}+i>`,
   underline: `Underline`,

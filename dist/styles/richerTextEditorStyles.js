@@ -1,6 +1,6 @@
 import {
   richerTextEditorStyles
-} from "../chunks/chunk-KX3W7YAU.js";
+} from "../chunks/chunk-SLMVBGK7.js";
 import "../chunks/chunk-7ZQBTYAI.js";
 export {
   richerTextEditorStyles

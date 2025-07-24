@@ -2,6 +2,9 @@ import {
   TipTapEditorBase
 } from "./chunk-MQQMWOKM.js";
 import {
+  File_default
+} from "./chunk-6UWOSGH3.js";
+import {
   CustomSuggestion_default
 } from "./chunk-C4RV2H35.js";
 import {
@@ -15,7 +18,7 @@ import {
 } from "./chunk-OQV35B6Z.js";
 import {
   RicherTextKit
-} from "./chunk-MOZVV6Q6.js";
+} from "./chunk-DQWBKNSX.js";
 import {
   RicherTextEmbed_default
 } from "./chunk-RSRBWB7G.js";
@@ -25,16 +28,16 @@ import {
 import {
   Image_default,
   uploadFile
-} from "./chunk-WWQKRGG4.js";
+} from "./chunk-TKYD3EQX.js";
 import {
   richerTextEditorStyles
-} from "./chunk-KX3W7YAU.js";
+} from "./chunk-SLMVBGK7.js";
 import {
   translations
-} from "./chunk-IZ5GQGBV.js";
+} from "./chunk-HJQ2Y6JT.js";
 import {
   icons_default
-} from "./chunk-Y3GZZSZO.js";
+} from "./chunk-AEBQSY2W.js";
 import {
   MentionSuggestion_default
 } from "./chunk-FY2HAP4Q.js";
@@ -45,6 +48,7 @@ import { classMap } from "lit/directives/class-map.js";
 import { map } from "lit/directives/map.js";
 import { RoleTooltip } from "role-components";
 import "role-components/exports/toolbar/toolbar-register.js";
+import { Extension } from "@tiptap/core";
 RoleTooltip.define();
 var RicherTextEditor = class extends TipTapEditorBase {
   static get styles() {
@@ -102,8 +106,14 @@ var RicherTextEditor = class extends TipTapEditorBase {
     if (this.toolbar.length > 0) {
       return;
     }
+    console.log("toolbarPreset", this.toolbarPreset);
     if (this.toolbarPreset === "minimal") {
       this.toolbar = ["bold", "italic", "strike"];
+    } else if (this.toolbarPreset === "threads") {
+      this.toolbar = ["bold", "italic", "strike", "code"];
+      if (this.attachments !== "false") {
+        this.toolbar.push("attachment");
+      }
     } else {
       this.toolbar = [
         "bold",
@@ -147,7 +157,7 @@ var RicherTextEditor = class extends TipTapEditorBase {
         embedPath: this.embedsPath
       }),
       CustomBubbleMenu_default("imageBubbleMenu").configure({
-        mode: "image",
+        mode: "imagechat",
         pluginKey: "imageBubbleMenu",
         shouldShow: ({ editor }) => {
           return editor.isActive("image");
@@ -162,6 +172,9 @@ var RicherTextEditor = class extends TipTapEditorBase {
         tables: this.tables !== "false"
       }),
       Image_default.configure({
+        attachmentsEnabled: this.attachments !== "false"
+      }),
+      File_default.configure({
         attachmentsEnabled: this.attachments !== "false"
       })
     ];
@@ -200,6 +213,15 @@ var RicherTextEditor = class extends TipTapEditorBase {
     this.rebuildEditor();
     this.configureToolbar();
     this.requestUpdate();
+    document.addEventListener("chat-editor:clear", this.handleClearEvent.bind(this));
+  }
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    document.removeEventListener("chat-editor:clear", this.handleClearEvent.bind(this));
+  }
+  handleClearEvent() {
+    console.log("handleClearEvent");
+    this.editor.commands.clearContent();
   }
   addFile() {
     if (this.attachments === "false")
@@ -216,22 +238,47 @@ var RicherTextEditor = class extends TipTapEditorBase {
       let tr = this.editor.view.state.tr;
       if (!tr.selection.empty)
         tr.deleteSelection();
-      tr.setMeta(this.editor.view, { add: { id, pos: tr.selection.from + index }, image: file });
+      tr.setMeta(this.editor.view, { add: { id, pos: tr.selection.from + index }, file });
       this.editor.view.dispatch(tr);
+      console.log("Upload complete");
       const onUploadComplete = (attrs, completedUpload) => {
-        const payload = {
-          signedId: attrs.signedId,
-          name: completedUpload.file.name,
-          src: `/rails/active_storage/blobs/redirect/${attrs.signedId}/${completedUpload.file.name}`,
-          alt: completedUpload.file.name
-        };
-        this.editor.view.dispatch(
-          this.editor.view.state.tr.replaceWith(this.editor.view.state.doc.content.size, this.editor.view.state.doc.content.size, this.editor.schema.nodes.image.create(payload)).setMeta(this.editor.view, { remove: { id } })
-        );
+        console.log("Upload complete", attrs, completedUpload);
+        if (file.type.startsWith("image/")) {
+          const payload = {
+            signedId: attrs.signedId,
+            name: completedUpload.file.name,
+            src: `/rails/active_storage/blobs/redirect/${attrs.signedId}/${completedUpload.file.name}`,
+            alt: completedUpload.file.name,
+            id: attrs.id
+          };
+          this.editor.view.dispatch(
+            this.editor.view.state.tr.replaceWith(this.editor.view.state.doc.content.size, this.editor.view.state.doc.content.size, this.editor.schema.nodes.image.create(payload)).setMeta(this.editor.view, { remove: { id } })
+          );
+        } else {
+          const payload = {
+            signedId: attrs.signedId,
+            fileName: completedUpload.file.name,
+            fileType: completedUpload.file.type,
+            fileSize: this.formatFileSize(completedUpload.file.size),
+            src: `/rails/active_storage/blobs/redirect/${attrs.signedId}/${completedUpload.file.name}`,
+            id: attrs.id
+          };
+          this.editor.view.dispatch(
+            this.editor.view.state.tr.replaceWith(this.editor.view.state.doc.content.size, this.editor.view.state.doc.content.size, this.editor.schema.nodes.file.create(payload)).setMeta(this.editor.view, { remove: { id } })
+          );
+        }
       };
       uploadFile(file, onUploadComplete);
     });
     this.shadowRoot.getElementById("file-input").value = "";
+  }
+  formatFileSize(bytes) {
+    if (bytes === 0)
+      return "0 Bytes";
+    const k = 1024;
+    const sizes = ["Bytes", "KB", "MB", "GB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   }
   async toggleiFramelyEmbed() {
     if (!this.iframelyKey) {
@@ -515,7 +562,6 @@ var RicherTextEditor = class extends TipTapEditorBase {
             type="file"
             hidden
             multiple
-            accept=${"image/*"}
             @change=${this.handleFileUpload}
           />
         </button>`
@@ -546,4 +592,4 @@ customElements.define("richer-text-editor", RicherTextEditor);
 export {
   RicherTextEditor
 };
-//# sourceMappingURL=chunk-DRSFT44P.js.map
+//# sourceMappingURL=chunk-BJQ2MIWM.js.map

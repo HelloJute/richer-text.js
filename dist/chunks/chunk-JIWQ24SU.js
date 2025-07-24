@@ -3,7 +3,7 @@ import {
 } from "./chunk-PY7BWEAX.js";
 import {
   icons_default
-} from "./chunk-Y3GZZSZO.js";
+} from "./chunk-AEBQSY2W.js";
 import {
   __publicField
 } from "./chunk-7ZQBTYAI.js";
@@ -36,4 +36,4 @@ customElements.define("richer-text-editor-embed-menu", EditEmbedMenu);
 export {
   EditEmbedMenu
 };
-//# sourceMappingURL=chunk-UXPPF6PQ.js.map
+//# sourceMappingURL=chunk-JIWQ24SU.js.map

@@ -15,7 +15,7 @@ var EditorEvents_default = Extension.create({
   onUpdate({ editor }) {
     const element = editor.options.element;
     const customEvent = new CustomEvent("richer-text-editor:update", {
-      detail: { html: editor.getHTML(), json: editor.getJSON(), isEmpty: editor.isEmpty },
+      detail: { html: editor.getHTML(), json: editor.getJSON(), isEmpty: editor.isEmpty, text: editor.getText() },
       bubbles: true
     });
     element.dispatchEvent(customEvent);
@@ -33,4 +33,4 @@ var EditorEvents_default = Extension.create({
 export {
   EditorEvents_default
 };
-//# sourceMappingURL=chunk-A4ZUN3A7.js.map
+//# sourceMappingURL=chunk-ZEYLKPOY.js.map

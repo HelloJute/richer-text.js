@@ -1,8 +1,8 @@
 import {
   RicherBubbleMenu
-} from "../../chunks/chunk-P4AOTAMZ.js";
+} from "../../chunks/chunk-7TPLATK3.js";
 import "../../chunks/chunk-FURX5OAL.js";
-import "../../chunks/chunk-Y3GZZSZO.js";
+import "../../chunks/chunk-AEBQSY2W.js";
 import "../../chunks/chunk-7ZQBTYAI.js";
 export {
   RicherBubbleMenu

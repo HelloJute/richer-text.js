@@ -25,7 +25,7 @@ export default Extension.create({
     const element = editor.options.element;
 
     const customEvent = new CustomEvent('richer-text-editor:update', {
-      detail: { html: editor.getHTML(), json: editor.getJSON(), isEmpty: editor.isEmpty },
+      detail: { html: editor.getHTML(), json: editor.getJSON(), isEmpty: editor.isEmpty, text: editor.getText() },
       bubbles: true
     });
 

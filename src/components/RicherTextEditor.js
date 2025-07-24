@@ -20,6 +20,7 @@ import { richerTextEditorStyles } from "../styles/richerTextEditorStyles";
 
 // Extensions
 import { RicherTextKit } from "../editor/extensions/RicherTextKit";
+import { Extension } from "@tiptap/core";
 
 import CustomSuggestion from "../editor/extensions/CustomSuggestion";
 import CustomSuggestionSuggestion from "../editor/suggestions/CustomSuggestionSuggestion";
@@ -29,6 +30,7 @@ import MentionSuggestion from "../editor/suggestions/MentionSuggestion";
 import RicherTextEmbed from "../editor/extensions/RicherTextEmbed";
 import iframelyEmbed from "../editor/extensions/iframelyEmbed";
 import Image from "../editor/extensions/Image";
+import File from "../editor/extensions/File";
 
 import "../editor/elements/RicherBubbleMenu";
 import CustomBubbleMenu from "../editor/extensions/CustomBubbleMenu";
@@ -95,8 +97,14 @@ export default class RicherTextEditor extends TipTapEditorBase {
       return;
     }
 
+    console.log("toolbarPreset", this.toolbarPreset);
     if (this.toolbarPreset === 'minimal') {
       this.toolbar = ['bold', 'italic', 'strike'];
+    } else if (this.toolbarPreset === 'threads') {
+      this.toolbar = ['bold', 'italic', 'strike', 'code'];
+      if (this.attachments !== "false") {
+        this.toolbar.push('attachment');
+      }
     } else {
       this.toolbar = [
         'bold',
@@ -150,7 +158,7 @@ export default class RicherTextEditor extends TipTapEditorBase {
         embedPath: this.embedsPath,
       }),
       CustomBubbleMenu("imageBubbleMenu").configure({
-        mode: "image",
+        mode: "imagechat",
         pluginKey: "imageBubbleMenu",
         shouldShow: ({ editor }) => {
           return editor.isActive("image");
@@ -165,6 +173,9 @@ export default class RicherTextEditor extends TipTapEditorBase {
         tables: this.tables !== "false"
       }),
       Image.configure({
+        attachmentsEnabled: this.attachments !== "false"
+      }),
+      File.configure({
         attachmentsEnabled: this.attachments !== "false"
       })
     ];
@@ -205,11 +216,29 @@ export default class RicherTextEditor extends TipTapEditorBase {
     return extensions;
   }
 
-  firstUpdated() {
+    firstUpdated() {
     this.rebuildEditor();
     this.configureToolbar();
 
     this.requestUpdate();
+
+    // Listen for chat-editor:clear event
+    document.addEventListener('chat-editor:clear', this.handleClearEvent.bind(this));
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+
+    // Remove event listener
+    document.removeEventListener('chat-editor:clear', this.handleClearEvent.bind(this));
+  }
+
+  handleClearEvent() {
+    console.log("handleClearEvent");
+    this.editor.commands.clearContent();
+    // if (this.editor) {
+      // this.clear();
+    // }
   }
 
   addFile() {
@@ -233,27 +262,57 @@ export default class RicherTextEditor extends TipTapEditorBase {
       let tr = this.editor.view.state.tr;
       if (!tr.selection.empty) tr.deleteSelection();
 
-      tr.setMeta(this.editor.view, {add: {id, pos: tr.selection.from + index}, image: file});
+      tr.setMeta(this.editor.view, {add: {id, pos: tr.selection.from + index}, file: file});
       this.editor.view.dispatch(tr)
+      console.log("Upload complete");
 
       const onUploadComplete = (attrs, completedUpload) => {
-        const payload = {
-          signedId: attrs.signedId,
-          name: completedUpload.file.name,
-          src: `/rails/active_storage/blobs/redirect/${attrs.signedId}/${completedUpload.file.name}`,
-          alt: completedUpload.file.name,
-        };
+        console.log("Upload complete", attrs, completedUpload);
 
-        this.editor.view.dispatch(
-          this.editor.view.state.tr.replaceWith(this.editor.view.state.doc.content.size, this.editor.view.state.doc.content.size, this.editor.schema.nodes.image.create(payload))
-            .setMeta(this.editor.view, {remove: {id}})
-        )
+        // Check if it's an image file
+        if (file.type.startsWith('image/')) {
+          const payload = {
+            signedId: attrs.signedId,
+            name: completedUpload.file.name,
+            src: `/rails/active_storage/blobs/redirect/${attrs.signedId}/${completedUpload.file.name}`,
+            alt: completedUpload.file.name,
+            id: attrs.id,
+          };
+
+          this.editor.view.dispatch(
+            this.editor.view.state.tr.replaceWith(this.editor.view.state.doc.content.size, this.editor.view.state.doc.content.size, this.editor.schema.nodes.image.create(payload))
+              .setMeta(this.editor.view, {remove: {id}})
+          )
+        } else {
+          // Handle non-image files
+          const payload = {
+            signedId: attrs.signedId,
+            fileName: completedUpload.file.name,
+            fileType: completedUpload.file.type,
+            fileSize: this.formatFileSize(completedUpload.file.size),
+            src: `/rails/active_storage/blobs/redirect/${attrs.signedId}/${completedUpload.file.name}`,
+            id: attrs.id,
+          };
+
+          this.editor.view.dispatch(
+            this.editor.view.state.tr.replaceWith(this.editor.view.state.doc.content.size, this.editor.view.state.doc.content.size, this.editor.schema.nodes.file.create(payload))
+              .setMeta(this.editor.view, {remove: {id}})
+          )
+        }
       }
 
       uploadFile(file, onUploadComplete);
     });
 
     this.shadowRoot.getElementById("file-input").value = "";
+  }
+
+  formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   }
 
   async toggleiFramelyEmbed() {
@@ -563,7 +622,6 @@ export default class RicherTextEditor extends TipTapEditorBase {
             type="file"
             hidden
             multiple
-            accept=${"image/*"}
             @change=${this.handleFileUpload}
           />
         </button>`,
