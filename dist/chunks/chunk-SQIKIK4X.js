@@ -3,7 +3,7 @@ import {
 } from "./chunk-MQQMWOKM.js";
 import {
   File_default
-} from "./chunk-6UWOSGH3.js";
+} from "./chunk-TLMLVVEW.js";
 import {
   CustomSuggestion_default
 } from "./chunk-C4RV2H35.js";
@@ -592,4 +592,4 @@ customElements.define("richer-text-editor", RicherTextEditor);
 export {
   RicherTextEditor
 };
-//# sourceMappingURL=chunk-BJQ2MIWM.js.map
+//# sourceMappingURL=chunk-SQIKIK4X.js.map

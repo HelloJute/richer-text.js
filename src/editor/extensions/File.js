@@ -135,15 +135,17 @@ export default Node.create({
   addNodeView() {
     return ({ node, getPos, editor }) => {
       const { signedId, fileName, fileType, fileSize, src, width } = node.attrs;
+      const previewUrl = `/attachments/previews/${signedId}`;
+      const downloadUrl = `/attachments/downloads/${signedId}`;
 
       const template = html`
       <div class="file-upload">
-        <div>
-          ${getFileIcon(fileType, fileName)}
-        </div>
-        <a href="${src}" download="${fileName}" class="file-download no-legacy flex-col items-center text-center h-24 w-24">
-          ${fileName}
+        <a href="${downloadUrl}" download="${fileName}" class="file-download no-legacy flex-col items-center text-center h-24 w-24">
+          <img src="${previewUrl}" alt="${fileName}" class="file-preview">
         </a>
+        <div class="file-name">
+          ${fileName}
+        </div>
       </div>
       `;
 
