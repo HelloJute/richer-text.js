@@ -140,6 +140,13 @@ export class TipTapEditorBase extends LitElement {
         attributes: {
           class: this.class,
         },
+        handleKeyDown: (_, event) => {
+          // Avoid the modifier+enter behavior when the editor is empty
+          if (event.target.editor.isEmpty && event.key === 'Enter' && (event.shiftKey || event.metaKey || event.ctrlKey)) {
+            console.log("Can't submit empty editor")
+            return true;
+          }
+        }
       },
       onCreate: () => {
         // The editor is ready.

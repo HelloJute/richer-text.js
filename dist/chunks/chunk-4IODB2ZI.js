@@ -112,6 +112,12 @@ var TipTapEditorBase = class extends LitElement {
       editorProps: {
         attributes: {
           class: this.class
+        },
+        handleKeyDown: (_, event) => {
+          if (event.target.editor.isEmpty && event.key === "Enter" && (event.shiftKey || event.metaKey || event.ctrlKey)) {
+            console.log("Can't submit empty editor");
+            return true;
+          }
         }
       },
       onCreate: () => {
@@ -188,4 +194,4 @@ var TipTapEditorBase = class extends LitElement {
 export {
   TipTapEditorBase
 };
-//# sourceMappingURL=chunk-MQQMWOKM.js.map
+//# sourceMappingURL=chunk-4IODB2ZI.js.map

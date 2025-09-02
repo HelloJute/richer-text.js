@@ -1,6 +1,6 @@
 import {
   TipTapEditorBase
-} from "./chunk-MQQMWOKM.js";
+} from "./chunk-4IODB2ZI.js";
 import {
   File_default
 } from "./chunk-TLMLVVEW.js";
@@ -219,8 +219,8 @@ var RicherTextEditor = class extends TipTapEditorBase {
     super.disconnectedCallback();
     document.removeEventListener("chat-editor:clear", this.handleClearEvent.bind(this));
   }
+  // We send a chat-editor:clear event from the app to signal the editor to clear its content
   handleClearEvent() {
-    console.log("handleClearEvent");
     this.editor.commands.clearContent();
   }
   addFile() {
@@ -592,4 +592,4 @@ customElements.define("richer-text-editor", RicherTextEditor);
 export {
   RicherTextEditor
 };
-//# sourceMappingURL=chunk-SQIKIK4X.js.map
+//# sourceMappingURL=chunk-TNWPARAG.js.map

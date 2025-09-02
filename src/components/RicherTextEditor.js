@@ -233,12 +233,9 @@ export default class RicherTextEditor extends TipTapEditorBase {
     document.removeEventListener('chat-editor:clear', this.handleClearEvent.bind(this));
   }
 
+  // We send a chat-editor:clear event from the app to signal the editor to clear its content
   handleClearEvent() {
-    console.log("handleClearEvent");
     this.editor.commands.clearContent();
-    // if (this.editor) {
-      // this.clear();
-    // }
   }
 
   addFile() {
